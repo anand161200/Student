@@ -26,5 +26,6 @@ Route::get('deleteStatus/{id}',[StudentController::class,'deleteStatus']);
 // pagination 
 
 Route::get('emp_list',[EmployeeController::class,'employelist']);
-Route::get('emp_data',[EmployeeController::class,'employeeData']);
+Route::get('emp_data/{page_size?}/{page_number?}',[EmployeeController::class,'employeeData']);
+Route::post('emp_datalist',[EmployeeController::class,'empData']);
 

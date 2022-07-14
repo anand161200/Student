@@ -10,6 +10,15 @@
 <body>
     <div class="container mt-5 p-2" style="margin-top: 100px;">
         <h4 class="text-center mt-3">Employee</h4>
+        <div>
+            <select class="form-select-sm form-select-sm mt-3" id="data_select" aria-label=".form-select-sm example">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            </select> 
+        </div>
         <table class="table text-center table-bordered">
             <thead>
                 <tr>
@@ -21,24 +30,101 @@
             <tbody id="employee_table">
             </tbody>
         </table>
+        <div class="p-2 bd-highlight">
+            <ul class="pagination">
+                <li class="page-item"><button class="btn page-link" id="Previous" onClick="previewPage('Previous')">Previous</button></li>
+                <ul class="pagination" id="button"></ul>
+                <li class="page-item"><button class="btn page-link" id="next" onClick="nextPage('next')">next
+                </button></li>
+            </ul>
+        </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
-         let emp_list=document.getElementById('employee_table');
+
+        let emp_list=document.getElementById('employee_table');
+        let button= document.getElementById("button");
+        let data_select=document.getElementById('data_select');
+        let all_data='';
+        let page_button='';
+        let page=1;
+        let page_size=1;
+        let data_list='';
 
          axios.get('/emp_data')
-        .then(function (response) {
-            let  emp_data = response.data.users;
-             
-                emp_data.forEach(employee => {
-                    emp_list.innerHTML += 
-                    `<tr>
-                        <td>${employee.name}</td>
-                        <td>${employee.designation}</td>
-                        <td>${employee.city}</td>
-                     </tr>`   
-                });
-            })
+        // axios.post('/emp_data')
+        .then(function (response) {  
+            let emp_data = response.data.users;
+                data_list= response.data.emp_data; // database array
+                all_data =emp_data;
+                reload();    
+        })
+
+        // axios.post('/emp_datalist',{
+        //     'page_number' : page,
+
+        // })
+        // .then(function (response) {    
+        // })
+
+        function reload()
+        {
+            emp_list.innerHTML="";
+            all_data.forEach(employee => {
+                emp_list.innerHTML += 
+                `<tr>
+                    <td>${employee.name}</td>
+                    <td>${employee.designation}</td>
+                    <td>${employee.city}</td>
+                </tr>`   
+            }); 
+            paginationButton();  
+        } 
+
+        document.getElementById("data_select").addEventListener('change', (event) => {
+            axios.get(`/emp_data/${event.target.value}`)
+           // axios.post('/emp_datalist',{'page_size' :event.target.value })
+            .then(function (response) {  
+            let emp_data = response.data.users;
+                page_button = response.data.page_count;
+                all_data =emp_data;
+                reload();
+            })     
+        });
+
+        function paginationButton() {
+            button.innerHTML="";
+            for(let i=1; i<page_button +1 ; i++)
+            {
+            button.innerHTML +=`<li class="page-item ${(i == page)? 'active' : ''}"><button class="btn page-link" 
+                onClick="runPaginate(${i})">${i}</button></li>`
+            }         
+        }
+        function runPaginate(page_number) {
+            //axios.get(`/emp_data/${page_number}`)
+            axios.post('/emp_datalist',{'page' :page_number})
+            page=page_number; 
+            emp_list.innerHTML="";
+            reload(); 
+        }
+
+        function paginate()
+        {
+            return all_data.slice((page - 1) * page_size, page * page_size); 
+        }
+
+        function previewPage() {
+            emp_list.innerHTML="";
+            page--;
+            reload();      
+        }
+
+        function nextPage()
+        {
+            emp_list.innerHTML="";
+            page++;
+            reload();
+        } 
     </script>
 </body>
 </html>
