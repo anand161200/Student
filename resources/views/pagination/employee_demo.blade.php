@@ -30,13 +30,16 @@
             <tbody id="employee_table">
             </tbody>
         </table>
-        <div class="p-2 bd-highlight">
-            <ul class="pagination">
-                <li class="page-item"><button class="btn page-link" id="Previous" onClick="previewPage('Previous')">Previous</button></li>
-                <ul class="pagination" id="button"></ul>
-                <li class="page-item"><button class="btn page-link" id="next" onClick="nextPage('next')">next
-                </button></li>
-            </ul>
+        <div class="d-flex bd-highlight mb-3 mt-3">
+            <div class="me-auto p-2 bd-highlight"><span id="display_entry"> </span></div>
+            <div class="p-2 bd-highlight">
+                <ul class="pagination">
+                    <li class="page-item"><button class="btn page-link" id="Previous" onClick="previewPage('Previous')">Previous</button></li>
+                    <ul class="pagination" id="button"></ul>
+                    <li class="page-item"><button class="btn page-link" id="next" onClick="nextPage('next')">next
+                    </button></li>
+                </ul>
+            </div>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -45,27 +48,36 @@
         let emp_list=document.getElementById('employee_table');
         let button= document.getElementById("button");
         let data_select=document.getElementById('data_select');
+        let display_entry=document.getElementById('display_entry');
         let all_data='';
         let page_button='';
         let page=1;
         let page_size=1;
-        let data_list='';
+        let datalist;
+        let $start_point=1
+        let $end_point=1
 
-         axios.get('/emp_data')
-        // axios.post('/emp_data')
-        .then(function (response) {  
-            let emp_data = response.data.users;
-                data_list= response.data.emp_data; // database array
+        window.onload=function(){
+            recall();
+        }
+
+        function recall()
+        {
+            axios.post('/emp_data',{
+                'page_number' : page,
+                'page_select' : page_size,            
+            })
+            .then(function (response) {  
+                let emp_data = response.data.users;
+                page_button = response.data.page_count;
+                datalist =response.data.emp_list;
+                $start_point =response.data.start;
+                $end_point=response.data.end;
                 all_data =emp_data;
                 reload();    
-        })
-
-        // axios.post('/emp_datalist',{
-        //     'page_number' : page,
-
-        // })
-        // .then(function (response) {    
-        // })
+            })
+           
+        }
 
         function reload()
         {
@@ -78,18 +90,13 @@
                     <td>${employee.city}</td>
                 </tr>`   
             }); 
-            paginationButton();  
+            paginationButton(); 
         } 
 
         document.getElementById("data_select").addEventListener('change', (event) => {
-            axios.get(`/emp_data/${event.target.value}`)
-           // axios.post('/emp_datalist',{'page_size' :event.target.value })
-            .then(function (response) {  
-            let emp_data = response.data.users;
-                page_button = response.data.page_count;
-                all_data =emp_data;
-                reload();
-            })     
+            page_size =event.target.value;
+            page=1;
+            recall();  
         });
 
         function paginationButton() {
@@ -97,22 +104,20 @@
             for(let i=1; i<page_button +1 ; i++)
             {
             button.innerHTML +=`<li class="page-item ${(i == page)? 'active' : ''}"><button class="btn page-link" 
-                onClick="runPaginate(${i})">${i}</button></li>`
+                onClick="changePage(${i})">${i}</button></li>`
             }         
         }
-        function runPaginate(page_number) {
-            //axios.get(`/emp_data/${page_number}`)
-            axios.post('/emp_datalist',{'page' :page_number})
+
+        function changePage(page_number) {
             page=page_number; 
-            emp_list.innerHTML="";
-            reload(); 
+            recall(); 
         }
 
-        function paginate()
-        {
-            return all_data.slice((page - 1) * page_size, page * page_size); 
-        }
-
+        function displayEntry() {
+            display_entry.innerHTML=`Showing ${$start_point} to ${$end_point} of ${datalist.length}`
+            recall();
+        }  
+        
         function previewPage() {
             emp_list.innerHTML="";
             page--;

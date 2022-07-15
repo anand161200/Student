@@ -14,21 +14,20 @@ class EmployeeController extends Controller
         return view('pagination.employee_demo');
     }
 
-    function employeeData($page_size = 1,$page_number=1)
+    function employeeData(Request $request)
     {
+       $start_point =$request->page_number * $request->page_select - $request->page_select + 1;
+       $end_point = $request->page_number * $request->page_select;
+       $result=Employee::offset($start_point)->take($request->page_select)->get();
        $all_data = Employee::all();
-       $page_button = (ceil(count($all_data)/$page_size));
+       $page_button = (ceil(count($all_data)/$request->page_select));
 
         return response()->json([
-            'users' => Employee::take($page_size)->get(),
-            'page_count'=>$page_button ,
-            'emp_data'=> $all_data,
-        ],200);
-    }
-
-    function empData(Request $request)
-    {
-        //dd($request->all());
-        dd($request->page);
+            'users' => $result,
+            'page_count'=>$page_button,
+            'emp_list' => $all_data,
+            'start' => $start_point,
+            'end' => $end_point
+        ],200);    
     }
 }
