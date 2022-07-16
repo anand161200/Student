@@ -58,6 +58,7 @@
         let $end_point=1
 
         window.onload=function(){
+            displayEntry();
             recall();
         }
 
@@ -74,9 +75,8 @@
                 $start_point =response.data.start;
                 $end_point=response.data.end;
                 all_data =emp_data;
-                reload();    
+                reload();   
             })
-           
         }
 
         function reload()
@@ -90,7 +90,7 @@
                     <td>${employee.city}</td>
                 </tr>`   
             }); 
-            paginationButton(); 
+            paginationButton();  
         } 
 
         document.getElementById("data_select").addEventListener('change', (event) => {
@@ -114,8 +114,8 @@
         }
 
         function displayEntry() {
+            console.log('saygya')
             display_entry.innerHTML=`Showing ${$start_point} to ${$end_point} of ${datalist.length}`
-            recall();
         }  
         
         function previewPage() {
