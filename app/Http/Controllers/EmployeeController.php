@@ -30,4 +30,25 @@ class EmployeeController extends Controller
             'end' => $end_point
         ],200);    
     }
+
+    public function addEmployee(Request $request)
+    {
+        //dd($request->all());
+
+        $request->validate([
+            'emp_name' => 'required',
+            'emp_designation' => 'required',
+            'emp_city' => 'required',
+        ]);
+
+        $employee= new Employee();
+        $employee->name=$request->emp_name;
+        $employee->designation=$request->emp_designation;
+        $employee->city=$request->emp_city;
+        $employee->save();
+
+        return response()->json([
+            'message' => 'record added'  
+        ],200);    
+    }
 }

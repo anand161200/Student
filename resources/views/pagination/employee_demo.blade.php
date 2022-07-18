@@ -10,6 +10,44 @@
 <body>
     <div class="container mt-5 p-2" style="margin-top: 100px;">
         <h4 class="text-center mt-3">Employee</h4>
+        <!-- Button trigger modal -->
+<button type="button" class="btn btn-primary" onClick="openmodel()">
+    Add
+  </button>
+  
+  <!-- Modal -->
+  <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Employee</h5>
+          <button type="button" class="btn-close" onClick="closemodel()" ></button>
+        </div>
+        <div class="modal-body">
+            <form>
+                <div class="mb-3">
+                  <label class="form-label">Name</label>
+                  <input type="text" id="name" name="name" class="form-control">
+                  <span class="text-danger" id="nameError"></span>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Designation</label>
+                    <input type="text" id="designation" name="designation" class="form-control">
+                    <span class="text-danger" id="designationError"></span>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">City</label>
+                    <input type="text" id="city" name="city" class="form-control">
+                    <span class="text-danger" id="cityError"></span>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer btn-center">
+          <button type="submit" onClick="FromSubmit()" class="btn btn-primary">Submit</button>
+        </div>
+      </div>
+    </div>
+  </div>
         <div>
             <select class="form-select-sm form-select-sm mt-3" id="data_select" aria-label=".form-select-sm example">
                 <option value="1">1</option>
@@ -42,6 +80,7 @@
             </div>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
 
@@ -49,17 +88,56 @@
         let button= document.getElementById("button");
         let data_select=document.getElementById('data_select');
         let display_entry=document.getElementById('display_entry');
+        let myModal = new bootstrap.Modal(document.getElementById("myModal"), {});
         let all_data='';
         let page_button='';
         let page=1;
         let page_size=1;
         let datalist;
-        let $start_point=1
-        let $end_point=1
+        let start_point=1
+        let end_point=1
 
         window.onload=function(){
-            displayEntry();
             recall();
+        }
+
+        function openmodel(){
+            myModal.show();
+        }
+
+        function closemodel(){
+            myModal.hide();
+        }
+
+        function FromSubmit()
+        { 
+           let name=document.getElementById('name');
+           let designation=document.getElementById('designation');
+           let city=document.getElementById('city');
+           // ERROR
+           let nameError=document.getElementById('nameError');
+           let designationError=document.getElementById('designationError');
+           let cityError=document.getElementById('cityError');
+
+           nameError.innerHTML='';
+           designationError.innerHTML='';
+           cityError.innerHTML='';
+
+           axios.post('/addEmployee',{
+                'emp_name' : name.value,
+                'emp_designation' : designation.value,            
+                'emp_city' : city.value,            
+            })
+            .then(function (response) {
+                closemodel();
+                reload();
+            })
+            .catch(function (error) {
+              //console.log(error.response.data.errors); 
+                nameError.innerHTML =error.response.data.errors.emp_name[0];
+                designationError.innerHTML =error.response.data.errors.emp_designation[0];
+                cityError.innerHTML =error.response.data.errors.emp_city[0];  
+            })     
         }
 
         function recall()
@@ -72,8 +150,8 @@
                 let emp_data = response.data.users;
                 page_button = response.data.page_count;
                 datalist =response.data.emp_list;
-                $start_point =response.data.start;
-                $end_point=response.data.end;
+                start_point =response.data.start;
+                end_point=response.data.end;
                 all_data =emp_data;
                 reload();   
             })
@@ -90,7 +168,8 @@
                     <td>${employee.city}</td>
                 </tr>`   
             }); 
-            paginationButton();  
+            paginationButton(); 
+            displayEntry(); 
         } 
 
         document.getElementById("data_select").addEventListener('change', (event) => {
@@ -114,8 +193,12 @@
         }
 
         function displayEntry() {
-            console.log('saygya')
-            display_entry.innerHTML=`Showing ${$start_point} to ${$end_point} of ${datalist.length}`
+            
+            if (end_point > datalist.length) 
+            {
+               end_point = start_point + (all_data.length - 1)
+            }
+            display_entry.innerHTML=`Showing ${start_point} to ${end_point} of ${datalist.length}`
         }  
         
         function previewPage() {

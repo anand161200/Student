@@ -28,4 +28,7 @@ Route::get('deleteStatus/{id}',[StudentController::class,'deleteStatus']);
 Route::get('emp_list',[EmployeeController::class,'employelist']);
 Route::post('emp_data',[EmployeeController::class,'employeeData']);
 
+// add model
+
+Route::post('addEmployee',[EmployeeController::class,'addEmployee']);
 
