@@ -16,7 +16,7 @@ class EmployeeController extends Controller
 
     function employeeData(Request $request)
     {
-       $start_point =$request->page_number * $request->page_select - $request->page_select + 1;
+       $start_point =$request->page_number * $request->page_select - $request->page_select;
        $end_point = $request->page_number * $request->page_select;
        $result=Employee::offset($start_point)->take($request->page_select)->get();
        $all_data = Employee::all();
@@ -50,5 +50,39 @@ class EmployeeController extends Controller
         return response()->json([
             'message' => 'record added'  
         ],200);    
+    }
+
+    public function employeeDetails($id)
+    {
+        $emp=Employee::find($id);
+        
+        return response()->json([
+            'details'  => $emp
+        ],200); 
+    }
+
+    public function updateEmployee(Request $request)
+    {
+        $request->validate([
+            'emp_name' => 'required',
+            'emp_designation' => 'required',
+            'emp_city' => 'required',
+        ]);
+
+       $update_data = Employee::find($request->emp_id);
+       $update_data->name=$request->emp_name;
+       $update_data->designation=$request->emp_designation;
+       $update_data->city=$request->emp_city;
+       $update_data->save();
+  
+        return response()->json([
+            'message' => 'record updated'  
+        ],200); 
+
+    }
+    public function deleteEmployee(Request $request)
+    {
+        $deleterecord=Employee::find($request->emp_id);
+        $deleterecord->delete();
     }
 }

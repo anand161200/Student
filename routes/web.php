@@ -17,18 +17,22 @@ use Illuminate\Support\Facades\Route;
 */
 
 // to do list
-
 Route::get('index',[StudentController::class, 'index'])->name('index');
 Route::get('student',[StudentController::class,'studentData'])->name('student');
 Route::get('updateStatus/{id}/{check}',[StudentController::class,'updateStatus']);
 Route::get('deleteStatus/{id}',[StudentController::class,'deleteStatus']);
 
 // pagination 
-
 Route::get('emp_list',[EmployeeController::class,'employelist']);
 Route::post('emp_data',[EmployeeController::class,'employeeData']);
 
 // add model
-
 Route::post('addEmployee',[EmployeeController::class,'addEmployee']);
+//delete employee
+Route::post('delete_Employee',[EmployeeController::class,'deleteEmployee']);
+// update model
+Route::get('employee-details/{id}',[EmployeeController::class,'employeeDetails']);
+Route::post('updateEmployee',[EmployeeController::class,'updateEmployee']);
+
+
 
