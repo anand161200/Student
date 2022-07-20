@@ -31,25 +31,41 @@ class EmployeeController extends Controller
         ],200);    
     }
 
-    public function addEmployee(Request $request)
+    public function storeOrupdate(Request $request)
     {
         //dd($request->all());
-
         $request->validate([
-            'emp_name' => 'required',
+            'emp_name' => 'required|unique:employee,name,'.$request->emp_id,
             'emp_designation' => 'required',
             'emp_city' => 'required',
         ]);
 
-        $employee= new Employee();
-        $employee->name=$request->emp_name;
-        $employee->designation=$request->emp_designation;
-        $employee->city=$request->emp_city;
-        $employee->save();
+        $employee = $request->emp_id !== null ? Employee::find($request->emp_id) : new Employee();
+        $employee->fill([
+            'name'=>$request->emp_name,
+            'designation'=>$request->emp_designation,
+            'city'=>$request->emp_city
+        ])->save();
+
+        // if($request->emp_id !== null)
+        // {
+        //     $update_data = Employee::find($request->emp_id);
+        //     $update_data->name=$request->emp_name;
+        //     $update_data->designation=$request->emp_designation;
+        //     $update_data->city=$request->emp_city;
+        //     $update_data->save();
+        // }
+        //  else{
+        //     $employee= new Employee();
+        //     $employee->name=$request->emp_name;
+        //     $employee->designation=$request->emp_designation;
+        //     $employee->city=$request->emp_city;
+        //     $employee->save();
+        // }
 
         return response()->json([
-            'message' => 'record added'  
-        ],200);    
+            'Record add and update successfully'  
+        ],200);
     }
 
     public function employeeDetails($id)
@@ -60,26 +76,7 @@ class EmployeeController extends Controller
             'details'  => $emp
         ],200); 
     }
-
-    public function updateEmployee(Request $request)
-    {
-        $request->validate([
-            'emp_name' => 'required',
-            'emp_designation' => 'required',
-            'emp_city' => 'required',
-        ]);
-
-       $update_data = Employee::find($request->emp_id);
-       $update_data->name=$request->emp_name;
-       $update_data->designation=$request->emp_designation;
-       $update_data->city=$request->emp_city;
-       $update_data->save();
-  
-        return response()->json([
-            'message' => 'record updated'  
-        ],200); 
-
-    }
+    
     public function deleteEmployee(Request $request)
     {
         $deleterecord=Employee::find($request->emp_id);

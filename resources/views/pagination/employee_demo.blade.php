@@ -19,7 +19,7 @@
                         <h5 class="modal-title" id="exampleModalLabel">Employee</h5>
                         <button type="button" class="btn-close" onClick="closemodel()" ></button>
                     </div>
-                    <div class="modal-body">
+                    <div class="modal-body p-2">
                         <form>
                             <div class="mb-3">
                             <label class="form-label">Name</label>
@@ -44,44 +44,11 @@
                 </div>
             </div>
         </div>
-        {{-- Update Model --}}
-        <div class="modal fade" id="update_model" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="update_exampleModalLabel">Update</h5>
-                        <button type="button" class="btn-close" onClick="closeUpdateModel()" ></button>
-                    </div>
-                    <div class="modal-body">
-                        <form>
-                            <div class="mb-3">
-                            <label class="form-label">Name</label>
-                            <input type="text" id="update_name" name="name" value='' class="form-control">
-                            <span class="text-danger" id="update_nameError"></span>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Designation</label>
-                                <input type="text" id="update_designation" name="designation" class="form-control">
-                                <span class="text-danger" id="update_designationError"></span>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">City</label>
-                                <input type="text" id="update_city" name="city" class="form-control">
-                                <span class="text-danger" id="update_cityError"></span>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer btn-center">
-                        <button type="submit" onClick="UpdateFrom()" class="btn btn-primary">Submit</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-          {{-- ___________________________ --}}
         <div class="d-flex bd-highlight mb-2 mt-3">
             <div class="me-auto bd-highlight">
                 <div>
                     <select class="form-select-sm form-select-sm" id="data_select" aria-label=".form-select-sm example">
+                        <option value="">Select</option>
                         <option value="1">1</option>
                         <option value="2">2</option>
                         <option value="3">3</option>
@@ -122,6 +89,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
 
         let emp_list=document.getElementById('employee_table');
@@ -137,15 +105,6 @@
         let nameError=document.getElementById('nameError');
         let designationError=document.getElementById('designationError');
         let cityError=document.getElementById('cityError');
-        // Upadte Model 
-        let update_model= new bootstrap.Modal(document.getElementById("update_model"), {});
-        let upadte_name=document.getElementById('update_name');
-        let update_designation=document.getElementById('update_designation');
-        let update_city=document.getElementById('update_city');
-
-        let update_nameError=document.getElementById('update_nameError');
-        let update_designationError=document.getElementById('update_designationError');
-        let update_cityError=document.getElementById('update_cityError');
         
         // pagination variable
         let all_data='';
@@ -157,38 +116,32 @@
         let end_point=1
         let employee_id='';
 
-        window.onload=function(){
+        window.onload=function() {
             recall();
         }
 
-        function openmodel(){
-            myModal.show();
-            //inputfiled
-            inputfiledReset();
-            // Error
-            ErrorReset();
+        function openmodel(id=null){
+            if(id !== null)
+            {
+                axios.get(`/employee-edit/${id}`)
+                .then(function (response) {
+                let data=response.data.details;
+                    employee_id=data.id;
+                    name.value=data.name;
+                    designation.value=data.designation;
+                    city.value=data.city;  
+                })
+            }
+            else
+            {
+                inputfiledReset();
+                ErrorReset();
+            }
+             myModal.show();
         }
 
         function closemodel(){
             myModal.hide();
-        }
-
-      //  Update from
-        function opanUpadteModel(id)
-        {
-            axios.get(`/employee-details/${id}`)
-            .then(function (response) {
-            let data=response.data.details;
-              employee_id=data.id;
-              upadte_name.value=data.name;
-              update_designation.value=data.designation;
-              update_city.value=data.city;  
-            })
-            update_model.show(); 
-        }
-        function closeUpdateModel()
-        {
-            update_model.hide(); 
         }
 
         function ErrorReset()
@@ -200,6 +153,7 @@
 
         function inputfiledReset()
         {
+            employee_id='';
             name.value='';
             designation.value='';
             city.value='';
@@ -207,23 +161,28 @@
 
         function FromSubmit()
         { 
-           ErrorReset();
-           axios.post('/addEmployee',{
-                'emp_name' : name.value,
-                'emp_designation' : designation.value,            
-                'emp_city' : city.value,            
+            ErrorReset();
+            axios.post('/employee-details',{
+            'emp_id' : employee_id,
+            'emp_name' : name.value,
+            'emp_designation':designation.value,
+            'emp_city' :city.value      
             })
             .then(function (response) {
                 closemodel();
                 recall();
             })
             .catch(function (error) {
-              //console.log(error.response.data.errors);
-                
-                if(name.value == '')
+            //console.log(error.response.data.errors);
+            let index = all_data.findIndex((item) => item.name.toLowerCase() === name.value.toLowerCase());
+                if(index !== -1)
                 {
                     nameError.innerHTML =error.response.data.errors.emp_name[0];
                 }
+                if(name.value == '')
+                {
+                    nameError.innerHTML =error.response.data.errors.emp_name[0];
+                }                  
                 if(designation.value == '')
                 {
                     designationError.innerHTML =error.response.data.errors.emp_designation[0];
@@ -233,43 +192,6 @@
                     cityError.innerHTML =error.response.data.errors.emp_city[0];
                 }  
             })     
-        }
-
-        function updateErrorReset()
-        {
-           update_nameError.innerHTML='';
-           update_designationError.innerHTML='';
-           update_cityError.innerHTML='';
-        }
-
-        function UpdateFrom()
-        {
-            updateErrorReset();
-            axios.post('/updateEmployee',{
-                'emp_id' : employee_id,
-                'emp_name' : upadte_name.value,
-                'emp_designation':update_designation.value,
-                'emp_city' :update_city.value      
-            })
-            .then(function (response) {
-                closeUpdateModel();
-                recall();
-            })
-            .catch(function (error) {
-              //console.log(error.response.data.errors);
-                if(upadte_name.value == '')
-                {
-                    update_nameError.innerHTML =error.response.data.errors.emp_name[0];
-                }
-                if(update_designation.value == '')
-                {
-                    update_designationError.innerHTML =error.response.data.errors.emp_designation[0];
-                }
-                if(update_city.value == '')
-                {
-                    update_cityError.innerHTML =error.response.data.errors.emp_city[0];
-                }  
-            })       
         }
 
         function recall()
@@ -298,9 +220,10 @@
                     <td>${employee.name}</td>
                     <td>${employee.designation}</td>
                     <td>${employee.city}</td>
-                    <td><button class="btn btn-success btn-sm" onclick="opanUpadteModel(${employee.id})" >
+                    <td><button class="btn btn-success btn-sm" onclick="openmodel(${employee.id})" >
                         <i class="fa fa-edit"></i></button>
-                        <button class="btn btn-danger btn-sm" onclick="remove(${employee.id})"><i class="fa fa-trash"></i></button>
+                        <button class="btn btn-danger btn-sm" onclick="remove(${employee.id})"><i class="fa fa-trash">
+                        </i></button>
                     </td>
                 </tr>`   
             });
@@ -318,7 +241,7 @@
             button.innerHTML="";
             for(let i=1; i<page_button +1 ; i++)
             {
-            button.innerHTML +=`<li class="page-item ${(i == page)? 'active' : ''}"><button class="btn page-link" 
+                button.innerHTML +=`<li class="page-item ${(i == page)? 'active' : ''}"><button class="btn page-link" 
                 onClick="changePage(${i})">${i}</button></li>`
             } 
 
@@ -355,29 +278,47 @@
         
         function remove(id)
         {
-            axios.post('/delete_Employee',{ 
-                'emp_id' : id          
-            })
-            .then(function (response) {
-                if(page > all_data.length)
-                {
-                    page=1
+            Swal.fire({
+                title: 'Are you sure want to delete ?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    axios.post('/delete_Employee',{ 
+                        'emp_id' : id          
+                    })
+                    .then(function (response) {
+                        if(page > all_data.length)
+                        {
+                            page=1
+                        }
+                        recall();
+                        Swal.fire({
+                            position: 'top-end',
+                            icon: 'success',
+                            title: ' delete successfully',
+                            showConfirmButton: false,
+                            timer: 1500
+                        })       
+                    })  
                 }
-                recall();
-            })  
+            })
         }
-        
+
         function previewPage() {
             emp_list.innerHTML="";
             page--;
-            reload();      
+            recall();
         }
 
         function nextPage()
         {
             emp_list.innerHTML="";
             page++;
-            reload();
+            recall();
         } 
     </script>
 </body>

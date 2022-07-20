@@ -25,14 +25,10 @@ Route::get('deleteStatus/{id}',[StudentController::class,'deleteStatus']);
 // pagination 
 Route::get('emp_list',[EmployeeController::class,'employelist']);
 Route::post('emp_data',[EmployeeController::class,'employeeData']);
+//add and update 
+Route::post('employee-details',[EmployeeController::class,'storeOrupdate']);
 
-// add model
-Route::post('addEmployee',[EmployeeController::class,'addEmployee']);
+Route::get('employee-edit/{id}',[EmployeeController::class,'employeeDetails']);
 //delete employee
 Route::post('delete_Employee',[EmployeeController::class,'deleteEmployee']);
-// update model
-Route::get('employee-details/{id}',[EmployeeController::class,'employeeDetails']);
-Route::post('updateEmployee',[EmployeeController::class,'updateEmployee']);
-
-
 
