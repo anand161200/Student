@@ -16,30 +16,30 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Employee</h5>
+                        <h5 class="modal-title" id="title_text"></h5>
                         <button type="button" class="btn-close" onClick="closemodel()" ></button>
                     </div>
-                    <div class="modal-body p-2">
+                    <div class="modal-body p-4">
                         <form>
                             <div class="mb-3">
                             <label class="form-label">Name</label>
                             <input type="text" id="name" name="name" class="form-control">
-                            <span class="text-danger" id="nameError"></span>
+                            <span class="text-danger" id="emp_name"></span>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Designation</label>
                                 <input type="text" id="designation" name="designation" class="form-control">
-                                <span class="text-danger" id="designationError"></span>
+                                <span class="text-danger" id="emp_designation"></span>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">City</label>
                                 <input type="text" id="city" name="city" class="form-control">
-                                <span class="text-danger" id="cityError"></span>
+                                <span class="text-danger" id="emp_city"></span>
                             </div>
                         </form>
                     </div>
-                    <div class="modal-footer btn-center">
-                        <button type="submit" onClick="FromSubmit()" class="btn btn-primary">Submit</button>
+                    <div class="modal-footer d-flex justify-content-center">
+                        <button type="submit" onClick="FromSubmit()" value="" class="btn btn-primary" id="button_text"></button>
                     </div>
                 </div>
             </div>
@@ -48,7 +48,6 @@
             <div class="me-auto bd-highlight">
                 <div>
                     <select class="form-select-sm form-select-sm" id="data_select" aria-label=".form-select-sm example">
-                        <option value="">Select</option>
                         <option value="1">1</option>
                         <option value="2">2</option>
                         <option value="3">3</option>
@@ -96,44 +95,55 @@
         let button= document.getElementById("button");
         let data_select=document.getElementById('data_select');
         let display_entry=document.getElementById('display_entry');
-        let myModal = new bootstrap.Modal(document.getElementById("myModal"), {});
         // model from input
+        let myModal = new bootstrap.Modal(document.getElementById("myModal"), {});
         let name=document.getElementById('name');
         let designation=document.getElementById('designation');
         let city=document.getElementById('city');
         // ERROR
-        let nameError=document.getElementById('nameError');
-        let designationError=document.getElementById('designationError');
-        let cityError=document.getElementById('cityError');
-        
+        let nameError=document.getElementById('emp_name');
+        let designationError=document.getElementById('emp_designation');
+        let cityError=document.getElementById('emp_city');
+        //  text-Change add or update
+        let title_text=document.getElementById('title_text'); 
+        let button_text=document.getElementById('button_text');
+      
         // pagination variable
         let all_data='';
         let page_button='';
         let page=1;
         let page_size=5;
         let datalist;
-        let start_point=1
-        let end_point=1
+        let start_point=1;
+        let end_point=0;
         let employee_id='';
+        let error={};  // object error
 
         window.onload=function() {
             recall();
+            data_select.value=page_size;
         }
-
         function openmodel(id=null){
+            
             if(id !== null)
             {
                 axios.get(`/employee-edit/${id}`)
                 .then(function (response) {
-                let data=response.data.details;
+                    let data=response.data.details;
+                    title_text.innerHTML=`Update : ${data.name}`;
+                    button_text.innerHTML='Update';
                     employee_id=data.id;
                     name.value=data.name;
                     designation.value=data.designation;
                     city.value=data.city;  
                 })
+            
+                ErrorReset();
             }
             else
             {
+                title_text.innerHTML="ADD";
+                button_text.innerHTML='Submit';
                 inputfiledReset();
                 ErrorReset();
             }
@@ -166,31 +176,25 @@
             'emp_id' : employee_id,
             'emp_name' : name.value,
             'emp_designation':designation.value,
-            'emp_city' :city.value      
+            'emp_city' :city.value     
             })
             .then(function (response) {
+                Swal.fire({
+                position: 'top-end',
+                icon: 'success',
+                title: 'Your work has been saved',
+                showConfirmButton: false,
+                timer: 1500
+                }) 
                 closemodel();
                 recall();
             })
             .catch(function (error) {
-            //console.log(error.response.data.errors);
-            let index = all_data.findIndex((item) => item.name.toLowerCase() === name.value.toLowerCase());
-                if(index !== -1)
-                {
-                    nameError.innerHTML =error.response.data.errors.emp_name[0];
-                }
-                if(name.value == '')
-                {
-                    nameError.innerHTML =error.response.data.errors.emp_name[0];
-                }                  
-                if(designation.value == '')
-                {
-                    designationError.innerHTML =error.response.data.errors.emp_designation[0];
-                }
-                if(city.value == '')
-                {
-                    cityError.innerHTML =error.response.data.errors.emp_city[0];
-                }  
+                error = error.response.data.errors;
+                Object.keys(error).forEach(function(key) {
+                    //  console.log(key, error[key]);  
+                     document.getElementById(key).innerHTML=error[key]; 
+                }); 
             })     
         }
 
@@ -271,9 +275,9 @@
             
             if (end_point > datalist.length) 
             {
-               end_point = start_point 
+               end_point = start_point +1
             }
-            display_entry.innerHTML=`Showing ${start_point} to ${end_point} of ${datalist.length}`
+            display_entry.innerHTML=`Showing ${start_point+1} to ${end_point} of ${datalist.length}`
         } 
         
         function remove(id)
